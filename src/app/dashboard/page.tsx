@@ -31,7 +31,7 @@ export default async function DashboardPage() {
         {/* Logo */}
         <div style={{ marginTop: '15px' }}>
           <Image
-            src="/logo.png"
+            src="/logo.jpg"
             alt="Echo Barrier"
             width={220}
             height={55}

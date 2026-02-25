@@ -54,9 +54,9 @@ export default function RegisterPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-10 py-5 border-b border-gray-100">
         <div className="flex items-center">
-          {/* Replace logo.png with the actual Echo Barrier logo */}
+          
           <Image
-            src="/logo.png"
+            src="/logo.jpg"
             alt="Echo Barrier"
             width={200}
             height={50}
@@ -81,7 +81,7 @@ export default function RegisterPage() {
             {/* Logo / Title */}
             <div className="text-center mb-8">
               <Image
-                src="/logo.png"
+                src="/logo.jpg"
                 alt="Echo Barrier"
                 width={180}
                 height={45}

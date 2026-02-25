@@ -46,7 +46,7 @@ export default function SetPasswordPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-10 py-5 border-b border-gray-100">
         <Image
-          src="/logo.png"
+          src="/logo.jpg"
           alt="Echo Barrier"
           width={200}
           height={50}
@@ -69,7 +69,7 @@ export default function SetPasswordPage() {
           <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-10">
             <div className="text-center mb-8">
               <Image
-                src="/logo.png"
+                src="/logo.jpg"
                 alt="Echo Barrier"
                 width={180}
                 height={45}

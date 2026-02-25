@@ -12,7 +12,7 @@ export default async function CheckEmailPage({
       {/* Header */}
       <header className="flex items-center justify-between px-10 py-5 border-b border-gray-100">
         <Image
-          src="/logo.png"
+          src="/logo.jpg"
           alt="Echo Barrier"
           width={200}
           height={50}
