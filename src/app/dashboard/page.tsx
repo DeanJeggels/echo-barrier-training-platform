@@ -33,9 +33,9 @@ export default async function DashboardPage() {
           <Image
             src="/logo.jpg"
             alt="Echo Barrier"
-            width={220}
-            height={55}
-            style={{ width: 'auto', maxWidth: '220px', height: 'auto', maxHeight: '55px', objectFit: 'contain' }}
+            width={340}
+            height={65}
+            style={{ width: 'auto', maxWidth: '340px', height: 'auto', maxHeight: '65px', objectFit: 'contain' }}
             priority
           />
         </div>

@@ -50,7 +50,7 @@ export default function SetPasswordPage() {
           alt="Echo Barrier"
           width={200}
           height={50}
-          className="h-12 w-auto object-contain"
+          className="h-16 w-auto object-contain"
           priority
         />
         <a
@@ -73,7 +73,7 @@ export default function SetPasswordPage() {
                 alt="Echo Barrier"
                 width={180}
                 height={45}
-                className="h-10 w-auto object-contain mx-auto mb-6"
+                className="h-14 w-auto object-contain mx-auto mb-6"
               />
               <h1 className="text-2xl font-bold text-black">
                 Create Your Password

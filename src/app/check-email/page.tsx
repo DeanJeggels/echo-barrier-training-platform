@@ -16,7 +16,7 @@ export default async function CheckEmailPage({
           alt="Echo Barrier"
           width={200}
           height={50}
-          className="h-12 w-auto object-contain"
+          className="h-16 w-auto object-contain"
           priority
         />
         <a

@@ -48,7 +48,7 @@ function LoginForm() {
           alt="Echo Barrier"
           width={180}
           height={45}
-          className="h-10 w-auto object-contain mx-auto mb-6"
+          className="h-14 w-auto object-contain mx-auto mb-6"
         />
         <h1 className="text-2xl font-bold text-black">Sign In</h1>
         <p className="text-gray-500 text-sm mt-2">
@@ -120,7 +120,7 @@ export default function LoginPage() {
           alt="Echo Barrier"
           width={200}
           height={50}
-          className="h-12 w-auto object-contain"
+          className="h-16 w-auto object-contain"
           priority
         />
         <a
