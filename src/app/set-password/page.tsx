@@ -12,7 +12,7 @@ export default function SetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleSetPassword(e: React.FormEvent) {
+  async function handleSetPassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
 

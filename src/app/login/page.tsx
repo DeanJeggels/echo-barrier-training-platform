@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -19,7 +19,7 @@ export default function LoginPage() {
     if (hint) setEmail(decodeURIComponent(hint))
   }, [searchParams])
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -40,6 +40,77 @@ export default function LoginPage() {
     router.refresh()
   }
 
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-10">
+      <div className="text-center mb-8">
+        <Image
+          src="/logo.jpg"
+          alt="Echo Barrier"
+          width={180}
+          height={45}
+          className="h-10 w-auto object-contain mx-auto mb-6"
+        />
+        <h1 className="text-2xl font-bold text-black">Sign In</h1>
+        <p className="text-gray-500 text-sm mt-2">
+          Access your Echo Barrier training portal
+        </p>
+      </div>
+
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@yourcompany.com"
+            required
+            disabled={loading}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            disabled={loading}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
+          />
+        </div>
+
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#FF7026] hover:bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+      </form>
+
+      <p className="text-center text-sm text-gray-500 mt-6">
+        Don&apos;t have an account?{' '}
+        <a href="/" className="text-[#FF7026] hover:underline font-medium">
+          Request access
+        </a>
+      </p>
+    </div>
+  )
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
@@ -65,80 +136,9 @@ export default function LoginPage() {
       {/* Main */}
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-10">
-            <div className="text-center mb-8">
-              <Image
-                src="/logo.jpg"
-                alt="Echo Barrier"
-                width={180}
-                height={45}
-                className="h-10 w-auto object-contain mx-auto mb-6"
-              />
-              <h1 className="text-2xl font-bold text-black">Sign In</h1>
-              <p className="text-gray-500 text-sm mt-2">
-                Access your Echo Barrier training portal
-              </p>
-            </div>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@yourcompany.com"
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
-                />
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-sm">{error}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#FF7026] hover:bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Signing in...' : 'Sign In'}
-              </button>
-            </form>
-
-            <p className="text-center text-sm text-gray-500 mt-6">
-              Don&apos;t have an account?{' '}
-              <a href="/" className="text-[#FF7026] hover:underline font-medium">
-                Request access
-              </a>
-            </p>
-          </div>
+          <Suspense fallback={<div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-10 h-96" />}>
+            <LoginForm />
+          </Suspense>
         </div>
       </main>
     </div>
