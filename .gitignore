@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+dist/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env*.local
+.env.production
+
+# Supabase local dev
+supabase/.temp/
+supabase/.branches/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
