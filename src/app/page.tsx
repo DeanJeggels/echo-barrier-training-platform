@@ -1,144 +1,118 @@
-'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase/server'
+import HubSpotVideo from '@/components/HubSpotVideo'
+import ElevenLabsAgentCard from '@/components/ElevenLabsAgentCard'
+import SignOutButton from '@/components/SignOutButton'
 
-export default function RegisterPage() {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+export default async function DashboardPage() {
+  const supabase = await createClient()
 
-  async function handleSubmit(e: { preventDefault(): void }) {
-    e.preventDefault()
-    setError('')
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address.')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const webhookUrl = process.env.NEXT_PUBLIC_N8N_INVITE_WEBHOOK!
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await res.json().catch(() => ({}))
-
-      // 409 = user already has an account — redirect to login
-      if (res.status === 409) {
-        router.push(`/login?hint=${encodeURIComponent(email)}`)
-        return
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.message || 'Something went wrong. Please try again.')
-      }
-
-      router.push(`/check-email?email=${encodeURIComponent(email)}`)
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  if (!user) {
+    redirect('/login')
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
       {/* Header */}
-      <header className="flex items-center justify-between px-10 py-5 border-b border-gray-100">
-        <div className="flex items-center">
-          
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          padding: '20px 40px',
+          borderBottom: '1px solid #f0f0f0',
+        }}
+      >
+        <div style={{ marginTop: '15px' }}>
           <Image
             src="/logo.jpg"
             alt="Echo Barrier"
-            width={200}
-            height={50}
-            className="h-16 w-auto object-contain"
+            width={340}
+            height={65}
+            style={{ width: 'auto', maxWidth: '340px', height: 'auto', maxHeight: '65px', objectFit: 'contain' }}
             priority
           />
         </div>
-        <a
-          href="https://echobarrier.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-[#FF7026] hover:bg-black text-white font-bold text-sm px-6 py-3 rounded transition-colors"
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginTop: '35px',
+          }}
         >
-          Visit Echobarrier.com
-        </a>
+          <a
+            href="https://echobarrier.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              backgroundColor: '#FF7026',
+              color: '#ffffff',
+              fontFamily: 'Roboto, sans-serif',
+              padding: '12px 30px',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              fontWeight: 700,
+              fontSize: '16px',
+              display: 'inline-block',
+              border: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Visit Echobarrier.com
+          </a>
+          <SignOutButton />
+        </div>
       </header>
 
-      {/* Main */}
-      <main className="flex-1 flex items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] p-10">
-            {/* Logo / Title */}
-            <div className="text-center mb-8">
-              <Image
-                src="/logo.jpg"
-                alt="Echo Barrier"
-                width={180}
-                height={45}
-                className="h-14 w-auto object-contain mx-auto mb-6"
-              />
-              <h1 className="text-2xl font-bold text-black">
-                Sales Training Access
-              </h1>
-              <p className="text-gray-500 text-sm mt-2">
-                Enter your work email to get access to Echo Barrier&apos;s US Sales Rep training portal.
-              </p>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Work Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@yourcompany.com"
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
-
-              {error && (
-                <p className="text-red-500 text-sm">{error}</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#FF7026] hover:bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Sending invite...' : 'Get Access'}
-              </button>
-            </form>
-
-            {/* Login link */}
-            <p className="text-center text-sm text-gray-500 mt-6">
-              Already have an account?{' '}
-              <a href="/login" className="text-[#FF7026] hover:underline font-medium">
-                Sign in
-              </a>
-            </p>
+      {/* Body */}
+      <div
+        style={{
+          paddingTop: '40px',
+          paddingLeft: '40px',
+          paddingRight: '40px',
+          paddingBottom: '40px',
+          maxWidth: '1400px',
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '40px',
+            width: '100%',
+          }}
+          className="dashboard-row"
+        >
+          <div style={{ flex: '2 1 60%', minWidth: '450px' }}>
+            <HubSpotVideo />
+          </div>
+          <div style={{ flex: '1 1 35%', minWidth: '300px' }}>
+            <ElevenLabsAgentCard userEmail={user.email!} />
           </div>
         </div>
-      </main>
+      </div>
+
+      <style>{`
+        @media (max-width: 991px) {
+          .dashboard-row {
+            flex-direction: column !important;
+          }
+          .dashboard-row > div {
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

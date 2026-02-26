@@ -71,7 +71,7 @@ export default async function CheckEmailPage({
 
             <p className="text-gray-400 text-xs">
               Didn&apos;t receive an email?{' '}
-              <a href="/" className="text-[#FF7026] hover:underline">
+              <a href="/register" className="text-[#FF7026] hover:underline">
                 Try again
               </a>
               {' '}or check your spam folder.

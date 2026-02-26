@@ -31,17 +31,17 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // Redirect unauthenticated users away from protected routes
-  if (!user && pathname.startsWith('/dashboard')) {
+  // Redirect unauthenticated users away from the dashboard (root + legacy /dashboard path)
+  if (!user && (pathname === '/' || pathname.startsWith('/dashboard'))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from auth pages (but not set-password)
-  if (user && (pathname === '/' || pathname === '/login') && !pathname.startsWith('/set-password')) {
+  // Redirect authenticated users away from public auth/register pages
+  if (user && (pathname === '/register' || pathname === '/login')) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 

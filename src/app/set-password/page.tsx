@@ -60,7 +60,7 @@ export default function SetPasswordPage() {
       }).catch(() => {})
     }
 
-    router.push('/dashboard')
+    router.push('/')
     router.refresh()
   }
 

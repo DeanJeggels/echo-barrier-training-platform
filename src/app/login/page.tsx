@@ -110,7 +110,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-gray-500 mt-6">
         Don&apos;t have an account?{' '}
-        <a href="/" className="text-[#FF7026] hover:underline font-medium">
+        <a href="/register" className="text-[#FF7026] hover:underline font-medium">
           Request access
         </a>
       </p>

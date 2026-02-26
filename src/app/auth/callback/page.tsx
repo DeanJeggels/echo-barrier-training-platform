@@ -39,7 +39,7 @@ function CallbackHandler() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-          router.push(type === 'invite' ? '/set-password' : (searchParams.get('next') ?? '/dashboard'))
+          router.push(type === 'invite' ? '/set-password' : (searchParams.get('next') ?? '/'))
           return
         }
         router.push('/login?error=auth_failed')
@@ -53,7 +53,7 @@ function CallbackHandler() {
       if (token_hash && tokenType) {
         const { error } = await supabase.auth.verifyOtp({ token_hash, type: tokenType })
         if (!error) {
-          router.push(tokenType === 'invite' ? '/set-password' : (searchParams.get('next') ?? '/dashboard'))
+          router.push(tokenType === 'invite' ? '/set-password' : (searchParams.get('next') ?? '/'))
           return
         }
         router.push('/login?error=auth_failed')
@@ -71,7 +71,7 @@ function CallbackHandler() {
           refresh_token: refreshToken,
         })
         if (!error) {
-          router.push(hashType === 'invite' ? '/set-password' : '/dashboard')
+          router.push(hashType === 'invite' ? '/set-password' : '/')
           return
         }
         router.push('/login?error=auth_failed')
@@ -81,7 +81,7 @@ function CallbackHandler() {
       // No recognisable params — check if a session was already established
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        router.push('/dashboard')
+        router.push('/')
         return
       }
 
