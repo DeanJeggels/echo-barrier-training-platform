@@ -32,16 +32,19 @@ export default function HubSpotVideo({ userEmail }: Props) {
 
   // Fire-and-forget tracking call — never blocks the UI
   function track(milestone: string, percentage?: number, durationSeconds?: number) {
+    console.log('[HubSpotVideo] track called:', { milestone, userEmail, alreadyTracked: tracked.current.has(milestone) })
     if (!userEmail || tracked.current.has(milestone)) return
     tracked.current.add(milestone)
+    console.log('[HubSpotVideo] calling /api/hubspot-track for milestone:', milestone)
     fetch('/api/hubspot-track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: userEmail, milestone, percentage, watchedSeconds: durationSeconds }),
-    }).catch(() => {})
+    }).then(r => r.json()).then(d => console.log('[HubSpotVideo] track response:', d)).catch(e => console.error('[HubSpotVideo] track error:', e))
   }
 
   function handlePlay() {
+    console.log('[HubSpotVideo] handlePlay fired, userEmail:', userEmail)
     lastTimeRef.current = videoRef.current?.currentTime ?? null
     track('started')
   }
