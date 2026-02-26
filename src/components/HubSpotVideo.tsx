@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 interface VideoData {
   playerEmbedUrl?: string
@@ -16,23 +15,7 @@ export default function HubSpotVideo() {
   useEffect(() => {
     async function fetchVideo() {
       try {
-        const supabase = createClient()
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-
-        if (!session) {
-          setError('Not authenticated')
-          setLoading(false)
-          return
-        }
-
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-        const res = await fetch(`${supabaseUrl}/functions/v1/hubspot-video`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
+        const res = await fetch('/api/hubspot-video')
 
         if (!res.ok) {
           throw new Error('Failed to load video')
