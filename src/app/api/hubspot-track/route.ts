@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { email, milestone, percentage } = await request.json()
+  const { email, milestone, percentage, watchedSeconds } = await request.json()
   if (!email || !milestone) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
@@ -20,6 +20,31 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // 0. Fire behavioral event for watch duration (best-effort, runs in parallel with note creation)
+    const eventName = process.env.HUBSPOT_VIDEO_EVENT_NAME
+    const durationPromise = (eventName && typeof watchedSeconds === 'number' && watchedSeconds > 0)
+      ? fetch('https://api.hubapi.com/events/v3/send', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${hubspotToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            eventName,
+            email,
+            properties: {
+              watch_duration_seconds: watchedSeconds,
+            },
+          }),
+        }).catch(() => {})
+      : Promise.resolve()
+
+    // duration_update milestones only need the behavioral event — skip the note
+    if (milestone === 'duration_update') {
+      await durationPromise
+      return NextResponse.json({ ok: true, tracked: true })
+    }
+
     // 1. Find the HubSpot contact by email
     const searchRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts/search', {
       method: 'POST',
@@ -69,6 +94,9 @@ export async function POST(request: NextRequest) {
         ],
       }),
     })
+
+    // Fire behavioral event alongside the note (non-blocking)
+    await durationPromise
 
     return NextResponse.json({ ok: true, tracked: true })
   } catch (err) {

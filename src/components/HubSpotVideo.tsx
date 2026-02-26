@@ -18,6 +18,9 @@ export default function HubSpotVideo({ userEmail }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   // Track which milestones have already been reported this session
   const tracked = useRef<Set<string>>(new Set())
+  // Accumulate actual seconds watched (ignores seeks)
+  const watchedSeconds = useRef(0)
+  const lastTimeRef = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/hubspot-video')
@@ -28,30 +31,54 @@ export default function HubSpotVideo({ userEmail }: Props) {
   }, [])
 
   // Fire-and-forget tracking call — never blocks the UI
-  function track(milestone: string, percentage?: number) {
+  function track(milestone: string, percentage?: number, durationSeconds?: number) {
     if (!userEmail || tracked.current.has(milestone)) return
     tracked.current.add(milestone)
     fetch('/api/hubspot-track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: userEmail, milestone, percentage }),
+      body: JSON.stringify({ email: userEmail, milestone, percentage, watchedSeconds: durationSeconds }),
     }).catch(() => {})
   }
 
   function handlePlay() {
+    lastTimeRef.current = videoRef.current?.currentTime ?? null
     track('started')
   }
 
   function handleTimeUpdate() {
     const el = videoRef.current
     if (!el || !el.duration) return
+
+    // Accumulate real watch time — ignore jumps > 2s (seeks)
+    if (lastTimeRef.current !== null) {
+      const delta = el.currentTime - lastTimeRef.current
+      if (delta > 0 && delta <= 2) {
+        watchedSeconds.current += delta
+      }
+    }
+    lastTimeRef.current = el.currentTime
+
     const pct = Math.floor((el.currentTime / el.duration) * 100)
-    if (pct >= 50 && !tracked.current.has('50%')) track('50%', 50)
-    if (pct >= 75 && !tracked.current.has('75%')) track('75%', 75)
+    if (pct >= 50 && !tracked.current.has('50%')) track('50%', 50, Math.round(watchedSeconds.current))
+    if (pct >= 75 && !tracked.current.has('75%')) track('75%', 75, Math.round(watchedSeconds.current))
+  }
+
+  function handlePause() {
+    lastTimeRef.current = null
+    // Send duration update on every pause so HubSpot stays current
+    if (userEmail && watchedSeconds.current > 0) {
+      fetch('/api/hubspot-track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, milestone: 'duration_update', watchedSeconds: Math.round(watchedSeconds.current) }),
+      }).catch(() => {})
+    }
   }
 
   function handleEnded() {
-    track('completed', 100)
+    lastTimeRef.current = null
+    track('completed', 100, Math.round(watchedSeconds.current))
   }
 
   if (loading) {
@@ -84,6 +111,7 @@ export default function HubSpotVideo({ userEmail }: Props) {
         controlsList="nodownload"
         onPlay={handlePlay}
         onTimeUpdate={handleTimeUpdate}
+        onPause={handlePause}
         onEnded={handleEnded}
         style={{ width: '100%', height: '100%', display: 'block' }}
         title={videoData.name ?? 'US Sales Reps Introduction'}
