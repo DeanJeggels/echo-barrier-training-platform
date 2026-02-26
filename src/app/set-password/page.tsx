@@ -7,14 +7,21 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function SetPasswordPage() {
   const router = useRouter()
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleSetPassword(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSetPassword(e: { preventDefault(): void }) {
     e.preventDefault()
     setError('')
+
+    if (!firstName.trim() || !lastName.trim()) {
+      setError('Please enter your first and last name.')
+      return
+    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
@@ -35,6 +42,22 @@ export default function SetPasswordPage() {
       setError(updateError.message)
       setLoading(false)
       return
+    }
+
+    // Get user info then call profile completion webhook (fire and forget)
+    const { data: { user } } = await supabase.auth.getUser()
+    const profileWebhook = process.env.NEXT_PUBLIC_N8N_PROFILE_WEBHOOK
+    if (user?.email && profileWebhook) {
+      fetch(profileWebhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          user_id: user.id,
+        }),
+      }).catch(() => {})
     }
 
     router.push('/dashboard')
@@ -76,14 +99,53 @@ export default function SetPasswordPage() {
                 className="h-14 w-auto object-contain mx-auto mb-6"
               />
               <h1 className="text-2xl font-bold text-black">
-                Create Your Password
+                Complete Your Profile
               </h1>
               <p className="text-gray-500 text-sm mt-2">
-                Set a password to access your training portal
+                Set up your account to access your training portal
               </p>
             </div>
 
             <form onSubmit={handleSetPassword} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    First Name
+                  </label>
+                  <input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Jane"
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Smith"
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF7026] focus:border-transparent disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label
                   htmlFor="password"
@@ -132,7 +194,7 @@ export default function SetPasswordPage() {
                 disabled={loading}
                 className="w-full bg-[#FF7026] hover:bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Setting password...' : 'Set Password & Continue'}
+                {loading ? 'Setting up your account...' : 'Complete Setup'}
               </button>
             </form>
           </div>

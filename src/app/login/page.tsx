@@ -14,12 +14,20 @@ function LoginForm() {
   const [error, setError] = useState('')
 
   // Pre-fill email if redirected from registration (already-registered case)
+  // Also surface auth errors from the callback route
   useEffect(() => {
     const hint = searchParams.get('hint')
     if (hint) setEmail(decodeURIComponent(hint))
+
+    const err = searchParams.get('error')
+    if (err === 'invite_expired') {
+      setError('Your invite link has expired or has already been used. Please contact your administrator for a new invite.')
+    } else if (err === 'auth_failed') {
+      setError('Authentication failed. Please try again or contact your administrator.')
+    }
   }, [searchParams])
 
-  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: { preventDefault(): void }) {
     e.preventDefault()
     setError('')
     setLoading(true)
