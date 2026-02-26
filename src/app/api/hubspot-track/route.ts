@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
   try {
     // 0. Fire behavioral event for watch duration (best-effort, runs in parallel with note creation)
     const eventName = process.env.HUBSPOT_VIDEO_EVENT_NAME
+    console.log('[hubspot-track] milestone:', milestone, 'watchedSeconds:', watchedSeconds, 'eventName:', eventName)
     const durationPromise = (eventName && typeof watchedSeconds === 'number' && watchedSeconds > 0)
       ? fetch('https://api.hubapi.com/events/v3/send', {
           method: 'POST',
@@ -36,7 +37,10 @@ export async function POST(request: NextRequest) {
               watch_duration_seconds: watchedSeconds,
             },
           }),
-        }).catch(() => {})
+        }).then(async r => {
+          const body = await r.text()
+          console.log('[hubspot-track] events/v3/send response:', r.status, body)
+        }).catch(e => console.error('[hubspot-track] events/v3/send error:', e))
       : Promise.resolve()
 
     // duration_update milestones only need the behavioral event — skip the note

@@ -69,13 +69,15 @@ export default function HubSpotVideo({ userEmail }: Props) {
 
   function handlePause() {
     lastTimeRef.current = null
+    console.log('[HubSpotVideo] handlePause fired, userEmail:', userEmail, 'watchedSeconds:', watchedSeconds.current)
     // Send duration update on every pause so HubSpot stays current
     if (userEmail && watchedSeconds.current > 0) {
+      console.log('[HubSpotVideo] calling /api/hubspot-track for duration_update:', Math.round(watchedSeconds.current), 's')
       fetch('/api/hubspot-track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: userEmail, milestone: 'duration_update', watchedSeconds: Math.round(watchedSeconds.current) }),
-      }).catch(() => {})
+      }).then(r => r.json()).then(d => console.log('[HubSpotVideo] duration_update response:', d)).catch(e => console.error('[HubSpotVideo] duration_update error:', e))
     }
   }
 
