@@ -35,9 +35,9 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    // 2. Fetch video details from HubSpot using private app token
+    // 2. Fetch video file from HubSpot Files API v3
     const hubspotToken = Deno.env.get('HUBSPOT_PRIVATE_APP_TOKEN')
-    const videoId = Deno.env.get('HUBSPOT_VIDEO_ID') ?? '206352108644'
+    const fileId = Deno.env.get('HUBSPOT_VIDEO_ID') ?? '206352108644'
 
     if (!hubspotToken) {
       return new Response(
@@ -47,34 +47,37 @@ Deno.serve(async (req: Request) => {
     }
 
     const hubspotRes = await fetch(
-      `https://api.hubapi.com/marketing/v3/videos/${videoId}`,
+      `https://api.hubapi.com/files/v3/files/${fileId}`,
       {
-        headers: {
-          'Authorization': `Bearer ${hubspotToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Authorization': `Bearer ${hubspotToken}` },
       }
     )
 
     if (!hubspotRes.ok) {
       const errText = await hubspotRes.text()
-      console.error('HubSpot API error:', hubspotRes.status, errText)
+      console.error('HubSpot Files API error:', hubspotRes.status, errText)
       return new Response(
         JSON.stringify({ error: 'Failed to fetch video from HubSpot', details: errText }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const videoData = await hubspotRes.json()
+    const fileData = await hubspotRes.json()
+    const videoUrl = fileData.defaultHostingUrl ?? fileData.url
+
+    if (!videoUrl) {
+      return new Response(
+        JSON.stringify({ error: 'Video URL not available' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // 3. Return only what the frontend needs
     return new Response(
       JSON.stringify({
-        id: videoData.id,
-        title: videoData.title ?? 'US Sales Reps Introduction',
-        playerEmbedUrl: videoData.playerEmbedUrl ?? videoData.player_embed_url,
-        streamingUrl: videoData.streamingUrl ?? videoData.streaming_url,
-        thumbnailUrl: videoData.thumbnailUrl ?? videoData.thumbnail_url,
+        id: fileData.id,
+        name: fileData.name ?? 'US Sales Reps Introduction',
+        url: videoUrl,
       }),
       {
         status: 200,
