@@ -94,7 +94,7 @@ export default async function DashboardPage() {
           className="dashboard-row"
         >
           <div style={{ flex: '2 1 60%', minWidth: '450px' }}>
-            <HubSpotVideo />
+            <HubSpotVideo userEmail={user.email!} />
           </div>
           <div style={{ flex: '1 1 35%', minWidth: '300px' }}>
             <ElevenLabsAgentCard userEmail={user.email!} />

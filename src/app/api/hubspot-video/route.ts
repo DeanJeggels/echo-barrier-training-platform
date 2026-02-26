@@ -11,37 +11,37 @@ export async function GET() {
   }
 
   const hubspotToken = process.env.HUBSPOT_PRIVATE_APP_TOKEN
-  const videoId = process.env.HUBSPOT_VIDEO_ID ?? '206352108644'
+  const fileId = process.env.HUBSPOT_VIDEO_ID ?? '206352108644'
 
   if (!hubspotToken) {
     return NextResponse.json({ error: 'HubSpot token not configured' }, { status: 500 })
   }
 
-  const hubspotRes = await fetch(
-    `https://api.hubapi.com/marketing/v3/videos/${videoId}`,
+  // Use the Files API v3 — returns a direct hostable URL for the video file
+  const fileRes = await fetch(
+    `https://api.hubapi.com/files/v3/files/${fileId}`,
     {
-      headers: {
-        Authorization: `Bearer ${hubspotToken}`,
-        'Content-Type': 'application/json',
-      },
-      // Don't cache stale video data
+      headers: { Authorization: `Bearer ${hubspotToken}` },
       next: { revalidate: 3600 },
     }
   )
 
-  if (!hubspotRes.ok) {
-    const errText = await hubspotRes.text()
-    console.error('HubSpot API error:', hubspotRes.status, errText)
+  if (!fileRes.ok) {
+    const errText = await fileRes.text()
+    console.error('HubSpot Files API error:', fileRes.status, errText)
     return NextResponse.json({ error: 'Failed to fetch video from HubSpot' }, { status: 502 })
   }
 
-  const videoData = await hubspotRes.json()
+  const fileData = await fileRes.json()
+  const videoUrl = fileData.defaultHostingUrl ?? fileData.url
+
+  if (!videoUrl) {
+    return NextResponse.json({ error: 'Video URL not available' }, { status: 502 })
+  }
 
   return NextResponse.json({
-    id: videoData.id,
-    title: videoData.title ?? 'US Sales Reps Introduction',
-    playerEmbedUrl: videoData.playerEmbedUrl ?? videoData.player_embed_url,
-    streamingUrl: videoData.streamingUrl ?? videoData.streaming_url,
-    thumbnailUrl: videoData.thumbnailUrl ?? videoData.thumbnail_url,
+    id: fileData.id,
+    name: fileData.name ?? 'US Sales Reps Introduction',
+    url: videoUrl,
   })
 }
